@@ -15,6 +15,37 @@ The game board and pieces are created using Banter's primitive geometry, and the
 
 The script will automatically initialize, draw the game board, and handle all game logic and synchronization.
 
+## SideQuest / Altspace Creator SDK (Snippet)
+
+In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `tic-tac-toe`. Or paste it into `Assets/WebRoot/index.html` between the snippet section comments:
+
+```html
+<!-- snippet section -->
+<bs-snippet name="tic-tac-toe" title="Tic-Tac-Toe"
+  description="Synced multiplayer upright Tic-Tac-Toe board with a reset button."
+  script="https://tic-tac-toe.firer.at/snippet.js"
+  room=""
+  position="0 1.2 2"
+  rotation="0 0 0"
+  scale="1"
+  lighting="unlit"
+  add-lights="true"
+  hide-ui="false"
+  hide-board="false"
+  use-custom-models="false"
+  reset-position="0 -0.4 0">
+  <bs-gizmo type="position" attribute="position"/>
+  <bs-gizmo type="plane" attribute="position" size="0.55 0.55"/>
+</bs-snippet>
+<!-- end snippet section -->
+```
+
+- Settings are the same as the script attributes above. `position` and `rotation` are Unity world values, and `scale` can be a single number.
+- Each placement is its own game. Its sync id is `room`, or the placement's own id when `room` is empty. Give placements the same `room` to share one game.
+- An empty setting uses the game's default.
+- The Scene-view gizmo shows the board at its default size; it does not follow `scale`.
+- Unity reads the snippet section as XML: quote every attribute, close every element, and write `&` as `&amp;`.
+
 ## Configuration
 
 You can customize the game's appearance and behavior using **HTML script attributes** (recommended) or legacy **URL query parameters** (for backwards compatibility).

@@ -522,7 +522,7 @@
                     if (cell === 2) color = COLORS.player2;
                     if (isWinCell) color = COLORS.winHighlight;
                     
-                    const mat = slot.defaultPiece.GetComponent(BS.ComponentType.BanterMaterial);
+                    const mat = slot.defaultPiece.GetComponent((BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial));
                     if (mat) mat.color = hexToVector4(color);
                 }
             }
