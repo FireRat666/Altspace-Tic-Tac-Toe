@@ -1,23 +1,20 @@
-# Banter Tic-Tac-Toe
+# Tic-Tac-Toe
 
-A simple, fully synchronized multiplayer Tic-Tac-Toe game designed for the Banter platform.
+A synced multiplayer upright Tic-Tac-Toe board. Made for **SideQuest / AltspaceVR** worlds, and it also works in **Banter**.
 
-## Description
+There is no server: players stay in sync through the space's shared state, and the game is plain static files served from <https://tic-tac-toe.firer.at>.
 
-This script creates a complete Tic-Tac-Toe game within a Banter space. The game state is synchronized across all players using Banter's public space properties, ensuring that everyone sees the same game board and turns are handled correctly.
+To try it, open <https://tic-tac-toe.firer.at> in Altspace or Banter.
 
-The game board and pieces are created using Banter's primitive geometry, and the script includes a simple UI for resetting the game.
+## Features
 
-## How to Use
+- Reset button
+- Several independent boards in one world
+- Built-in pieces or GLB models
 
-1.  **Place the Script:** Make sure the `TicTacToe.js` script is hosted in a location accessible to your Banter space.
-2.  **Add to Your Space:** In your Banter space, add an "Embed" with the URL pointing to your hosted `TicTacToe.js` script.
+## Add it to an Altspace world (snippet)
 
-The script will automatically initialize, draw the game board, and handle all game logic and synchronization.
-
-## SideQuest / Altspace Creator SDK (Snippet)
-
-In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `tic-tac-toe`. Or paste it into `Assets/WebRoot/index.html` between the snippet section comments:
+In a Creator SDK world, add an empty GameObject at the origin, click **Add Component > BS > Snippet** and type `tic-tac-toe`. Or paste this into `Assets/WebRoot/index.html`, between the snippet section comments:
 
 ```html
 <!-- snippet section -->
@@ -40,41 +37,60 @@ In a SideQuest/Altspace Creator SDK world, add an empty GameObject at the origin
 <!-- end snippet section -->
 ```
 
-- Settings are the same as the script attributes above. `position` and `rotation` are Unity world values, and `scale` can be a single number.
 - Each placement is its own game. Its sync id is `room`, or the placement's own id when `room` is empty. Give placements the same `room` to share one game.
-- An empty setting uses the game's default.
+- `position` and `rotation` are Unity world values, and `scale` can be a single number. The other settings are listed under [Settings](#settings). An empty setting uses the default.
 - The Scene-view gizmo shows the board at its default size; it does not follow `scale`.
 - Unity reads the snippet section as XML: quote every attribute, close every element, and write `&` as `&amp;`.
 
-## Configuration
+## Add it with a script tag
 
-You can customize the game's appearance and behavior using **HTML script attributes** (recommended) or legacy **URL query parameters** (for backwards compatibility).
+This works in an Altspace world's `Assets/WebRoot/index.html` (outside the snippet section) and in a Banter space's HTML:
 
-**HTML Script Attributes Example (Recommended):**
 ```html
-<script src="https://banter-tic-tac-toe.firer.at/TicTacToe.js" instance="game1" boardScale="1.5 1.5 1.5"></script>
+<script src="https://tic-tac-toe.firer.at/TicTacToe.js" position="0 1.2 2" scale="1.5"></script>
 ```
 
-**Legacy URL Query Parameters Example:**
+For more than one board in a space, give each one its own `instance`:
+
 ```html
-<script src="https://banter-tic-tac-toe.firer.at/TicTacToe.js?instance=game1&boardScale=1.5+1.5+1.5"></script>
+<script src="https://tic-tac-toe.firer.at/TicTacToe.js" instance="board1" position="-2 1.1 -2"></script>
+<script src="https://tic-tac-toe.firer.at/TicTacToe.js" instance="board2" position="2 1.1 -2"></script>
 ```
 
-### Available Attributes / Parameters
+Settings can also go in the URL, as in older setups: `https://tic-tac-toe.firer.at/TicTacToe.js?boardPosition=0+1.1+-2&boardScale=0.8`.
 
-| Parameter / Attribute | Type          | Default                               | Description                                                                                             |
-| ----------------- | ------------- | ------------------------------------- | ------------------------------------------------------------------------------------------------------- |
-| `instance`        | `string`      | (Current URL)                         | An ID to distinguish between multiple game instances. Players in spaces with the same instance ID will be synced. |
-| `boardPosition` / `position` / `board-position`   | `Vector3 (string)` | `"0 1.2 0"`                           | The `X Y Z` position of the game board in world space. Values are space-separated.                      |
-| `boardRotation` / `rotation` / `board-rotation`   | `Vector3 (string)` | `"0 0 0"`                             | The `X Y Z` euler rotation of the game board.                                                           |
-| `boardScale` / `scale` / `board-scale`      | `Vector3 (string)` | `"1 1 1"`                             | The `X Y Z` scale of the entire game object.                                                            |
-| `resetPosition` / `reset-position`   | `Vector3 (string)` | `"0 -0.4 0"`                          | The `X Y Z` position of the reset button, relative to the board.                                        |
-| `resetRotation` / `reset-rotation`   | `Vector3 (string)` | `"0 0 0"`                             | The `X Y Z` euler rotation of the reset button.                                                         |
-| `resetScale` / `reset-scale`      | `Vector3 (string)` | `"1 1 1"`                             | The `X Y Z` scale of the reset button.                                                                  |
-| `hideUI` / `hide-ui`          | `boolean`     | `false`                               | Set to `true` to hide the reset button.                                                                 |
-| `hideBoard` / `hide-board`       | `boolean`     | `false`                               | Set to `true` to hide the game board.                                                                   |
-| `useCustomModels` / `use-custom-models` | `boolean`   | `false`                               | Set to `true` to use custom 3D models for pieces.                                                       |
-| `lighting`        | `string`      | `"unlit"`                             | Shader mode: `lit` or `unlit`.                                                                          |
-| `addLights` / `add-lights`       | `boolean`     | `true`                                | Set to `false` to prevent adding default lights when in lit mode.                                       |
+## Settings
 
----
+| Setting | Also accepted | Default | Description |
+| :--- | :--- | :--- | :--- |
+| `instance` |  | page URL | Sync id. Boards with the same id share one game. In a snippet, use `room` instead. |
+| `boardPosition` | `position`, `board-position` | `0 1.2 0` | Board position (x y z). |
+| `boardRotation` | `rotation`, `board-rotation` | `0 0 0` | Board rotation in degrees (x y z). |
+| `boardScale` | `scale`, `board-scale` | `1` | Board scale: one number, or x y z. |
+| `resetPosition` | `reset-position` | `0 -0.4 0` | Reset button position, relative to the board. |
+| `resetRotation` | `reset-rotation` | `0 0 0` | Reset button rotation, relative to the board. |
+| `resetScale` | `reset-scale` | `1` | Reset button scale. |
+| `hideUI` | `hide-ui` | `false` | `true` hides the buttons. |
+| `hideBoard` | `hide-board` | `false` | `true` hides the board, e.g. to use your own. |
+| `useCustomModels` | `use-custom-models` | `false` | `true` uses the GLB models in `Models/` for the pieces instead of built-in shapes. |
+| `lighting` |  | `unlit` | `lit` uses materials that react to scene lights. |
+| `addLights` | `add-lights` | `true` | With `lighting="lit"`, adds a directional light. Set `false` if the world has its own. |
+
+Settings can be written as `boardPosition` or `board-position`; the snippet uses the hyphenated form.
+
+## How to play
+
+1. Click a square to take it.
+2. Three in a row wins.
+3. Reset clears the board for everyone.
+
+## Files
+
+- `TicTacToe.js`: the game.
+- `Models/`: piece models for `use-custom-models`.
+- `snippet.js`, `snippet.html`: the Creator SDK snippet and its definition.
+- `index.html`: a test page with a floor and the game.
+
+## License
+
+GPL-3.0. See [LICENSE](LICENSE).
