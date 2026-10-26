@@ -469,7 +469,30 @@
         return piece;
     }
 
-    async function updateVisuals() {
+    // Redraws can overlap (e.g. loading saved state on join while the first sync event
+    // arrives). Two overlapping redraws both create a piece for the same empty slot and one
+    // gets orphaned, so it is never hidden again (e.g. after a reset). Run one at a time,
+    // and redraw once more if a new one was requested mid-run.
+    let redrawing = null;
+    let redrawAgain = false;
+    function updateVisuals() {
+        redrawAgain = true;
+        if (!redrawing) {
+            redrawing = (async () => {
+                try {
+                    while (redrawAgain) {
+                        redrawAgain = false;
+                        await renderVisuals();
+                    }
+                } finally {
+                    redrawing = null;
+                }
+            })();
+        }
+        return redrawing;
+    }
+
+    async function renderVisuals() {
         for (let r = 0; r < 3; r++) {
             for (let c = 0; c < 3; c++) {
                 const cell = state.game.board[r][c];
