@@ -28,7 +28,8 @@
     };
 
     const COLORS = {
-        board: '#333333',    // Dark Grey Board
+        board: '#EDEDED',    // Light grid lines
+        panel: '#22313F',    // Dark slate panel behind the grid
         player1: '#D50000',  // Red ('X')
         player2: '#FFEA00',  // Yellow ('O')
         empty: '#FFFFFF',    // Empty slot
@@ -335,17 +336,20 @@
         await frameRoot.SetParent(state.root, false);
         await frameRoot.AddComponent(new BS.Transform());
 
-        // Create 4 bars for the grid
+        // Create 4 bars for the grid, on a dark panel (the panel sits just behind the grid)
         if (!config.hideBoard) {
+            await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
+                { width: 0.72, height: 0.72, depth: 0.02 },
+                COLORS.panel, new BS.Vector3(0, 0, -0.02));
             const barPositions = [-gap / 2, gap / 2];
             for(const pos of barPositions) {
                 // Vertical bars
                 await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                    { width: barThickness, height: boardSize, depth: barThickness },
+                    { width: barThickness, height: boardSize, depth: 0.02 },
                     COLORS.board, new BS.Vector3(pos, 0, 0));
                 // Horizontal bars
                 await createBanterObject(frameRoot, BS.GeometryType.BoxGeometry,
-                    { width: boardSize, height: barThickness, depth: barThickness },
+                    { width: boardSize, height: barThickness, depth: 0.02 },
                     COLORS.board, new BS.Vector3(0, pos, 0));
             }
         }
@@ -406,7 +410,7 @@
             syncState();
         });
 
-        await createTurnBoard(state.root, config.scoreboardPosition || [0, 0.42, 0], config.scoreboardRotation || [0, 0, 0], config.scoreboardScale || [1, 1, 1], 0.6, 0.14, false);
+        await createTurnBoard(state.root, config.scoreboardPosition || [0, 0.45, 0], config.scoreboardRotation || [0, 0, 0], config.scoreboardScale || [1, 1, 1], 0.6, 0.14, false);
         setupListeners();
         checkForExistingState();
         console.log("TicTacToe: Setup Scene Complete");
@@ -434,7 +438,7 @@
         const color = hexToVector4(colorHex);
         color.w = opacity;
 
-        const shader = opacity < 1.0 ? "Unlit/DiffuseTransparent" : "Unlit/Diffuse";
+        const shader = opacity < 1.0 ? "Unlit/DiffuseTransparent" : (config.lighting === 'lit' ? "Standard" : "Unlit/Diffuse");
         // Use cacheBust to create unique material instance for objects that need dynamic colors
         await obj.AddComponent(new BS.BanterMaterial(shader, "", color, BS.MaterialSide.Front, false, cacheBust || ""));
 
@@ -611,6 +615,35 @@
         return redrawing;
     }
 
+    // An X (two crossed bars) or an O (a ring of short segments), built from boxes.
+    async function createSymbol(kind, pos, key) {
+        const root = await new BS.GameObject(`${kind}_${key}`).Async();
+        await root.SetParent(state.piecesRoot, false);
+        const t = await root.AddComponent(new BS.Transform());
+        t.localPosition = pos;
+        const parts = [];
+        const add = async (w, h, x, y, angle) => {
+            const part = await createBanterObject(root, BS.GeometryType.BoxGeometry,
+                { width: w, height: h, depth: 0.03 }, COLORS.empty, new BS.Vector3(x, y, 0),
+                false, 1.0, `${kind}_${key}_${parts.length}`);
+            part.GetComponent(BS.ComponentType.Transform).localEulerAngles = new BS.Vector3(0, 0, angle);
+            parts.push(part);
+        };
+        if (kind === 'X') {
+            await add(0.22, 0.04, 0, 0, 45);
+            await add(0.22, 0.04, 0, 0, -45);
+        } else {
+            const n = 16;
+            const radius = 0.075;
+            for (let i = 0; i < n; i++) {
+                const a = (i / n) * Math.PI * 2;
+                await add(2 * Math.PI * radius / n * 1.15, 0.035, Math.cos(a) * radius, Math.sin(a) * radius, a * 180 / Math.PI + 90);
+            }
+        }
+        root.parts = parts;
+        return root;
+    }
+
     async function renderVisuals() {
         for (let r = 0; r < 3; r++) {
             for (let c = 0; c < 3; c++) {
@@ -650,22 +683,22 @@
                         }
                      }
                 } else {
-                    // Default Boxes
-                    if (!slot.defaultPiece) {
-                        slot.defaultPiece = await createBanterObject(state.piecesRoot, BS.GeometryType.BoxGeometry,
-                            { width: slot.cellSize * 0.8, height: slot.cellSize * 0.8, depth: 0.05 },
-                            COLORS.empty, slot.pos, false, 1.0, `piece_${r}_${c}`
-                        );
-                    }
-                    
+                    // Plain shapes: an X for player 1, an O for player 2
+                    const kind = cell === 1 ? 'X' : 'O';
+                    const key = kind === 'X' ? 'xPiece' : 'oPiece';
+                    if (!slot[key]) slot[key] = await createSymbol(kind, slot.pos, `${r}_${c}`);
+                    if (slot.xPiece) slot.xPiece.SetActive(false);
+                    if (slot.oPiece) slot.oPiece.SetActive(false);
+                    slot.defaultPiece = slot[key];
                     slot.defaultPiece.SetActive(true);
-                    let color = COLORS.empty;
-                    if (cell === 1) color = COLORS.player1;
-                    if (cell === 2) color = COLORS.player2;
+
+                    let color = cell === 1 ? COLORS.player1 : COLORS.player2;
                     if (isWinCell) color = COLORS.winHighlight;
-                    
-                    const mat = slot.defaultPiece.GetComponent((BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial));
-                    if (mat) mat.color = hexToVector4(color);
+                    const matType = BS.ComponentType.Material ?? BS.ComponentType.BanterMaterial;
+                    slot.defaultPiece.parts.forEach(part => {
+                        const mat = part.GetComponent(matType);
+                        if (mat) mat.color = hexToVector4(color);
+                    });
                 }
             }
         }
