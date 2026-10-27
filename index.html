@@ -133,7 +133,28 @@
        Tic-Tac-Toe embed
        Customize via URL params in the src attribute!
     -->
-    <script src="TicTacToe.js?boardPosition=0+1.5+3&boardScale=2"></script>
+    <!-- snippet section -->
+    <bs-snippet name="tic-tac-toe" title="Tic-Tac-Toe"
+      description="Synced multiplayer upright Tic-Tac-Toe board with a reset button."
+      script="https://tic-tac-toe.firer.at/snippet.js"
+      room=""
+      position="0 1.2 2"
+      rotation="0 0 0"
+      scale="1"
+      lit="true"
+      add-lights="false"
+      turn-cooldown="5"
+      hide-ui="false"
+      hide-board="false"
+      use-custom-models="true"
+      reset-position="0 -0.4 0"
+      reset-rotation="0 0 0"
+      reset-scale="1">
+      <bs-gizmo type="position" attribute="position"/>
+      <bs-gizmo type="plane" attribute="position" size="0.55 0.55"/>
+    </bs-snippet>
+    <!-- end snippet section -->
+
 </body>
 
 </html>
