@@ -33,7 +33,10 @@ In a Creator SDK world, add an empty GameObject at the origin, click **Add Compo
   use-custom-models="true"
   reset-position="0 -0.4 0"
   reset-rotation="0 0 0"
-  reset-scale="1">
+  reset-scale="1"
+  scoreboard-position="0 0 0"
+  scoreboard-rotation="0 0 0"
+  scoreboard-scale="1">
   <bs-gizmo type="position" attribute="position"/>
   <bs-gizmo type="plane" attribute="position" size="0.55 0.55"/>
 </bs-snippet>
@@ -74,7 +77,7 @@ Settings can also go in the URL, as in older setups: `https://tic-tac-toe.firer.
 | `resetRotation` | `reset-rotation` | `0 0 0` | Reset button rotation, relative to the board. |
 | `resetScale` | `reset-scale` | `1` | Reset button scale. |
 | `hideUI` | `hide-ui` | `false` | `true` makes the reset button invisible (it still works and its RESET label stays visible) and hides the turn display. |
-| `scoreboardPosition` | `scoreboard-position` | `0 0.42 0` | Position of the sign showing whose turn it is, relative to the board. |
+| `scoreboardPosition` | `scoreboard-position` | `0 0 0` | Position of the sign showing whose turn it is, relative to the board. |
 | `scoreboardRotation` | `scoreboard-rotation` | `0 0 0` | Turn sign rotation. |
 | `scoreboardScale` | `scoreboard-scale` | `1` | Turn sign scale. |
 | `turnCooldown` | `turn-cooldown` | `5` | Seconds after a move before the same person can move for the other side, so a double click or an eager player can't take the opponent's turn. Playing both sides alone still works after the wait. `0` turns it off. |
@@ -85,6 +88,8 @@ Settings can also go in the URL, as in older setups: `https://tic-tac-toe.firer.
 | `addLights` | `add-lights` | `false` | With `lit="true"`, `true` adds a directional light, for worlds that have no lights of their own. |
 
 Settings can be written as `boardPosition` or `board-position`; the snippet uses the hyphenated form.
+
+A position of `0 0 0` means automatic: the turn sign sits in its default spot next to the board. Any other value places it relative to the board.
 
 ## How to play
 
